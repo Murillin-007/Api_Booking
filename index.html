@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    mindate <input id="mindate">
+    <br>
+    maxdate <input id="maxdate">
+    <br>
+    room_qty <input id="room_qty">
+    <br>
+    adults <input id="adults">
+    <br>
+    <button id="btn">Atualizar</button>
+
+    <div id="response"></div>
+
+    
+    <script>
+        var mindate;
+        var maxdate;
+        var room_qty;
+        var adults;
+        var mindateValue;
+        
+        const button = document.getElementById("btn");
+
+        button.addEventListener("click", () => { 
+            mindate = document.getElementById("mindate");
+            maxdate = document.getElementById("maxdate");
+            room_qty = document.getElementById("room_qty");
+            adults = document.getElementById("adults");
+            mindate = mindate.value;
+            maxdate = maxdate.value;
+            room_qty = room_qty.value;
+            adults = adults.value;
+            alert(`${mindate} e ${maxdate}`);
+
+            get(mindate, maxdate,room_qty,adults);
+        });
+
+        function get(mindate, maxdate,room_qty,adults) {
+                const data = null;
+
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener('readystatechange', function () {
+                if (this.readyState === this.DONE) {
+                    console.log(this.responseText);
+                    var response = this.responseText;
+                    document.getElementById("response").innerHTML = response;
+                }
+            });
+
+            xhr.open('GET', `https://booking-com15.p.rapidapi.com/api/v1/hotels/getAvailability?hotel_id=11496463&min_date=${mindate}&max_date=${maxdate}&room_qty=${room_qty}&adults=${adults}&currency_code=BRL&location=BR`);
+            xhr.setRequestHeader('x-rapidapi-key', '627a9a2459msh0f64ff7124612c3p10fbedjsnd738c1d3248a');
+            xhr.setRequestHeader('x-rapidapi-host', 'booking-com15.p.rapidapi.com');
+
+            xhr.send(data);
+        }
+            </script>
+</body>
+</html>
