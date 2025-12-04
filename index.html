@@ -6,11 +6,13 @@
     <title>Document</title>
      <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background-color: #18212e;">
 <div class="consultor-box">
     <div>
-        <h1>Escolha pousadas (marque múltiplas):</h1>
+        <h1>Escolha pousadas:</h1>
+       
         <div class="hotel-list">
+
             <label><input type="checkbox" name="hotels" value="11496463" data-name="VELINN guest house"> VELINN guest house</label>
             <label><input type="checkbox" name="hotels" value="2993686" data-name="Pousada VHL - Campos do Jordão"> Pousada VHL - Campos do Jordão</label>
             <label><input type="checkbox" name="hotels" value="1669425" data-name="VELINN Pousada Vila Floratta"> VELINN Pousada Vila Floratta</label>
@@ -29,6 +31,12 @@
             <label>Quartos <input id="room_qty" type="number" min="1" value="1"></label>
             <label>Adultos <input id="adults" type="number" min="1" value="1"></label>
             <button id="btn">Atualizar</button>
+
+            <div class="add-hotel">
+                <input id="new_hotel_id" type="text" placeholder="ID da pousada (ex: 123456)" />
+                <input id="new_hotel_name" type="text" placeholder="Nome (opcional)" />
+                <button id="add_hotel_btn" type="button">Adicionar pousada</button>
+            </div>
         </div>
     </div>
     <div id="response"></div>
@@ -45,6 +53,7 @@
             const maxdate = document.getElementById("maxdate").value;
             const room_qty = document.getElementById("room_qty").value || 1;
             const adults = document.getElementById("adults").value || 1;
+            const hotelInput = document.getElementById("new_hotel_id").value.trim();
 
             const checked = Array.from(document.querySelectorAll('input[name="hotels"]:checked'));
             if (checked.length === 0) {
@@ -87,6 +96,36 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 return { hotel_id, name, data: json };
+            });
+        }
+
+        // Adicionar pousada manualmente por ID
+        const addHotelBtn = document.getElementById('add_hotel_btn');
+        if (addHotelBtn) {
+            addHotelBtn.addEventListener('click', () => {
+                const idInput = document.getElementById('new_hotel_id');
+                const nameInput = document.getElementById('new_hotel_name');
+                const id = idInput.value.trim();
+                const name = (nameInput.value.trim() || `Hotel ${id}`);
+
+                if (!id) { alert('Informe o ID da pousada.'); return; }
+
+                // Criar label + checkbox e anexar à lista
+                const list = document.querySelector('.hotel-list');
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'hotels';
+                checkbox.value = id;
+                checkbox.setAttribute('data-name', name);
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(' ' + name));
+                list.appendChild(label);
+
+                // limpar inputs e focar no id para adicionar outra
+                idInput.value = '';
+                nameInput.value = '';
+                idInput.focus();
             });
         }
 

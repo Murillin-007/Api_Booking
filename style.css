@@ -1,19 +1,32 @@
+/* DARK MODE STYLES */
+:root{
+  --bg: #0b1020;
+  --card: #0f1724;
+  --muted: #94a3b8;
+  --text: white;
+  --accent: #3b82f6;
+  --accent-strong: #1e40af;
+  --border: rgba(255,255,255,0.06);
+  --surface: #0b1220;
+}
+
 /* Container geral */
 .consultor-box {
     max-width: 900px;
     margin: 30px auto;
     padding: 20px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: linear-gradient(180deg, var(--card), rgba(15,23,39,0.9));
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(2,6,23,0.6);
     font-family: Arial, sans-serif;
+    color: var(--text);
 }
 
 /* Título */
 .consultor-box h1 {
-    font-size: 22px;
-    margin-bottom: 15px;
-    color: #333;
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--text);
 }
 
 /* Lista de hotéis */
@@ -25,90 +38,93 @@
 }
 
 .hotel-list label {
-    background: #f5f5f5;
+    background: rgba(255,255,255,0.02);
     padding: 10px;
     border-radius: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: background 0.12s ease, transform 0.06s ease;
+    border: 1px solid var(--border);
 }
 
 .hotel-list label:hover {
-    background: #e8e8e8;
+    background: rgba(255,255,255,0.03);
+    transform: translateY(-1px);
 }
+
+.hotel-list input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 
 /* Controles */
 .controles {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
     margin-bottom: 15px;
+    align-items: start;
 }
 
 .controles label {
     display: flex;
     flex-direction: column;
-    font-size: 14px;
-    color: #333;
+    font-size: 13px;
+    color: var(--text);
 }
 
 .controles input {
     padding: 8px 10px;
-    margin-top: 4px;
-    border: 1px solid #ccc;
+    margin-top: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 8px;
-    font-size: 14px;
+    background: rgba(255,255,255,0.02);
+    color: var(--text);
 }
+
+.controles input::placeholder { color: var(--muted); }
 
 /* Botão */
 #btn {
     padding: 10px 18px;
-    background: #0077ff;
+    background: linear-gradient(180deg,var(--accent),var(--accent-strong));
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     margin-top: 22px;
-    transition: 0.2s ease;
+    transition: transform .08s ease, box-shadow .12s ease;
+    box-shadow: 0 6px 18px rgba(14,78,194,0.18);
 }
 
-#btn:hover {
-    background: #005fcc;
-}
+#btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(14,78,194,0.22); }
 
 /* Área de resposta */
-#response {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #444;
-}
+#response { margin-top: 20px; font-size: 15px; color: var(--muted); }
 
-.results {
-    margin-top: 20px;
-}
+.results { margin-top: 18px; }
 
 /* RESPONSIVIDADE */
 @media (max-width: 600px) {
-    .hotel-list {
-        grid-template-columns: 1fr;
-    }
-
-    .controles {
-        flex-direction: column;
-    }
-
-    #btn {
-        width: 100%;
-    }
+    .hotel-list { grid-template-columns: 1fr; }
+    .controles { flex-direction: column; }
+    #btn { width: 100%; }
 }
 
 /* Comparison table styles */
 .comparison-wrap { width: 100%; overflow-x: auto; }
 .comparison-table { width: 100%; border-collapse: collapse; margin-top: 8px; min-width: 600px; }
-.comparison-table th, .comparison-table td { border: 1px solid #e6eef8; padding: 8px 10px; text-align: left; font-size: 13px; }
-.comparison-table thead th { background: #f1f6fb; position: sticky; top: 0; z-index: 2; }
-.comparison-table tbody td { background: #fff; }
+.comparison-table th, .comparison-table td { border: 1px solid rgba(255,255,255,0.04); padding: 8px 10px; text-align: left; font-size: 13px; color: var(--text); }
+.comparison-table thead th { background: rgba(255,255,255,0.02); position: sticky; top: 0; z-index: 2; }
+.comparison-table tbody td { background: transparent; }
+
+.comparison-table td:nth-child(1), .comparison-table th:nth-child(1) { width: 140px; }
+
+.comparison-table tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+
+/* Formulário de adicionar pousada */
+.add-hotel { display:flex; gap:8px; width:100%; margin-top:10px; }
+.add-hotel input { flex: 1 1 auto; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); color:var(--text); }
+.add-hotel button { padding:8px 10px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
+.add-hotel button:hover { background:var(--accent-strong); }
 
 
