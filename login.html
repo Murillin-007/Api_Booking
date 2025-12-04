@@ -1,127 +1,375 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Comparador de Pousadas</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Consultor</title>
+     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="site-header">
     <div class="site-brand">Comparador de Pousadas</div>
     <nav class="site-nav">
+        <a href="index.html">Início</a>
+        <a href="#about">Sobre</a>
+        <a href="admin.html" id="admin-link" style="display:none;">Admin</a>
+        <a href="#" id="logout-btn" style="display:none;color:#ff7b7b;">Logout</a>
+        <a href="login.html" id="login-link">Login</a>
     </nav>
 </header>
 
 <main class="page-main">
-    <div class="login-container">
-        <div class="login-card">
-            <h2>Entrar</h2>
-            
-            <div class="error-message" id="error-msg"></div>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Usuário</label>
-                    <input type="text" id="username" placeholder="seu usuário" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" placeholder="sua senha" required>
-                </div>
-                
-                <button type="submit" class="login-btn">Entrar</button>
-            </form>
-            
-            <div class="login-footer">
-                Não tem conta? <a href="#signup">Criar uma</a>
+  <div class="consultor-box">
+    <div>
+        <h1>Escolha pousadas:</h1>
+
+        <div class="hotel-list">
+            <label><input type="checkbox" name="hotels" value="11496463" data-name="VELINN guest house"> VELINN guest house</label>
+            <label><input type="checkbox" name="hotels" value="2993686" data-name="Pousada VHL - Campos do Jordão"> Pousada VHL - Campos do Jordão</label>
+            <label><input type="checkbox" name="hotels" value="1669425" data-name="VELINN Pousada Vila Floratta"> VELINN Pousada Vila Floratta</label>
+            <label><input type="checkbox" name="hotels" value="7379907" data-name="Colinas Capivari Suites"> Colinas Capivari Suites</label>
+            <label><input type="checkbox" name="hotels" value="8170701" data-name="Pousada Alpes Azul"> Pousada Alpes Azul</label>
+            <label><input type="checkbox" name="hotels" value="302135" data-name="Joia da Serra"> Joia da Serra</label>
+            <label><input type="checkbox" name="hotels" value="466251" data-name="VELINN Pousada Chateau do Luar Prime"> VELINN Pousada Chateau do Luar Prime</label>
+            <label><input type="checkbox" name="hotels" value="7363425" data-name="Pousada Araucária"> Pousada Araucária</label>
+            <label><input type="checkbox" name="hotels" value="295061" data-name="Pousada Vilaregio de Campos"> Pousada Vilaregio de Campos</label>
+            <label><input type="checkbox" name="hotels" value="295061" data-name="Nacional Inn Campos do Jordão"> Nacional Inn Campos do Jordão</label>
+        </div>
+        </div>
+        <div class ="controles">
+            <label>Data início <input id="mindate" type="date"></label>
+            <label>Data fim <input id="maxdate" type="date"></label>
+            <label>Quartos <input id="room_qty" type="number" min="1" value="1"></label>
+            <label>Adultos <input id="adults" type="number" min="1" value="1"></label>
+            <button id="btn">Atualizar</button>
+
+            <div class="add-hotel">
+                <input id="new_hotel_id" type="text" placeholder="ID da pousada (ex: 123456)" />
+                <input id="new_hotel_name" type="text" placeholder="Nome (opcional)" />
+                <button id="add_hotel_btn" type="button">Adicionar pousada</button>
+
             </div>
         </div>
+        </div>
+        <div id="response"></div>
+        <div id="results" class="results"></div>
     </div>
 </main>
 
 <footer class="site-footer">
     <div class="footer-content">2025 - Consultor de preços booking</div>
+</footer>
 
-<script>
-    // Verificar se usuário já está logado
-    function checkLogin() {
-        const adminAuth = localStorage.getItem('adminAuth');
-        if (adminAuth) {
-            window.location.href = 'admin.html';
-            return;
-        }
-        
-        const user = localStorage.getItem('currentUser');
-        if (user) {
-            window.location.href = 'index.html';
-        }
-    }
-
-    // Executar ao carregar a página
-    checkLogin();
-
-    // Inicializar usuários padrão se não existirem
-    function initializeDefaultUsers() {
-        const users = JSON.parse(localStorage.getItem('appUsers') || '[]');
-        if (users.length === 0) {
-            const defaultUsers = [
-                { username: 'usuario1', password: 'senha123' },
-                { username: 'usuario2', password: 'senha456' }
-            ];
-            localStorage.setItem('appUsers', JSON.stringify(defaultUsers));
-        }
-    }
-
-    initializeDefaultUsers();
-
-    // Handler de login
-    document.getElementById('login-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const errorMsg = document.getElementById('error-msg');
-
-        // Validação básica
-        if (!username || !password) {
-            errorMsg.textContent = 'Por favor, preencha todos os campos.';
-            errorMsg.classList.add('show');
-            return;
+    
+    <script>
+        import { createClient } from '@supabase/supabase-js'
+        const supabaseUrl = 'https://mmsoamuxngpsykrdwgcb.supabase.co'
+        const supabaseKey = process.env.SUPABASE_KEY
+        const supabase = createClient(supabaseUrl, supabaseKey)
+        // ===== AUTENTICAÇÃO =====
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            const loginLink = document.getElementById('login-link');
+            const logoutBtn = document.getElementById('logout-btn');
+            const adminLink = document.getElementById('admin-link');
+            
+            if (user) {
+                loginLink.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                adminLink.style.display = 'none'; // usuários normais não acessam admin
+            } else {
+                loginLink.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                adminLink.style.display = 'none';
+            }
         }
 
-        if (password.length < 4) {
-            errorMsg.textContent = 'A senha deve ter pelo menos 4 caracteres.';
-            errorMsg.classList.add('show');
-            return;
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        });
+
+        checkAuth();
+
+        // ===== GERENCIAR POUSADAS POR USUÁRIO =====
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).username : null;
         }
 
-        // Verificar se é login de Admin (credenciais específicas)
-        if (username === 'Moril' && password === 'MuriloMurilo_123') {
-            errorMsg.classList.remove('show');
-            localStorage.setItem('adminAuth', JSON.stringify({ username: 'Moril', loginTime: Date.now() }));
-            setTimeout(() => {
-                window.location.href = 'admin.html';
-            }, 300);
-            return;
+        function getUserHotelsKey(username) {
+            return `userHotels_${username}`;
         }
 
-        // Login de Usuário Regular
-        const users = JSON.parse(localStorage.getItem('appUsers') || '[]');
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (user) {
-            errorMsg.classList.remove('show');
-            localStorage.setItem('currentUser', JSON.stringify({ username, loginTime: Date.now() }));
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 300);
-        } else {
-            errorMsg.textContent = 'Usuário ou senha inválidos.';
-            errorMsg.classList.add('show');
+        function getUserAddedHotels(username) {
+            const key = getUserHotelsKey(username);
+            return JSON.parse(localStorage.getItem(key) || '[]');
         }
-    });
-</script>
+
+        function saveUserAddedHotels(username, hotels) {
+            const key = getUserHotelsKey(username);
+            localStorage.setItem(key, JSON.stringify(hotels));
+        }
+
+        function loadUserAddedHotels() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            const addedHotels = getUserAddedHotels(user);
+            const list = document.querySelector('.hotel-list');
+            
+            addedHotels.forEach(hotel => {
+                const label = document.createElement('label');
+                label.setAttribute('data-user-added', 'true');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'hotels';
+                checkbox.value = hotel.id;
+                checkbox.setAttribute('data-name', hotel.name);
+
+                const span = document.createElement('span');
+                span.className = 'hotel-name';
+                span.textContent = ' ' + hotel.name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-hotel-btn';
+                removeBtn.title = 'Remover esta pousada';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    label.remove();
+                    saveCurrentUserAddedHotels();
+                });
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                label.appendChild(removeBtn);
+                list.appendChild(label);
+            });
+        }
+
+        function saveCurrentUserAddedHotels() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            const addedLabels = document.querySelectorAll('label[data-user-added="true"]');
+            const hotels = Array.from(addedLabels).map(label => {
+                const input = label.querySelector('input');
+                return {
+                    id: input.value,
+                    name: input.getAttribute('data-name')
+                };
+            });
+            
+            saveUserAddedHotels(user, hotels);
+        }
+
+        // Carregar pousadas do usuário ao iniciar
+        if (getCurrentUser()) {
+            loadUserAddedHotels();
+        }
+
+        // ===== FUNCIONALIDADES EXISTENTES =====
+        const button = document.getElementById("btn");
+
+        button.addEventListener("click", async () => {
+            const mindate = document.getElementById("mindate").value;
+            const maxdate = document.getElementById("maxdate").value;
+            const room_qty = document.getElementById("room_qty").value || 1;
+            const adults = document.getElementById("adults").value || 1;
+            const hotelInput = document.getElementById("new_hotel_id").value.trim();
+
+            const checked = Array.from(document.querySelectorAll('input[name="hotels"]:checked'));
+            if (checked.length === 0) {
+                alert('Marque ao menos uma pousada para comparar.');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '<em>Buscando disponibilidade...</em>';
+            document.getElementById('results').innerHTML = '';
+
+            const requests = checked.map(ch => fetchAvailability({
+                hotel_id: ch.value,
+                name: ch.dataset.name,
+                min_date: mindate,
+                max_date: maxdate,
+                room_qty,
+                adults
+            }));
+
+            try {
+                const results = await Promise.all(requests);
+                renderResults(results);
+                document.getElementById('response').innerHTML = '';
+            } catch (err) {
+                document.getElementById('response').innerHTML = '<span style="color:red">Erro ao buscar dados. Verifique o console.</span>';
+                console.error(err);
+            }
+        });
+
+        function fetchAvailability({hotel_id, name, min_date, max_date, room_qty, adults}) {
+            const url = `https://booking-com15.p.rapidapi.com/api/v1/hotels/getAvailability?hotel_id=${hotel_id}&min_date=${min_date}&max_date=${max_date}&room_qty=${room_qty}&adults=${adults}&currency_code=BRL&location=BR`;
+
+            return fetch(url, {
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': '627a9a2459msh0f64ff7124612c3p10fbedjsnd738c1d3248a',
+                    'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
+                }
+            }).then(async res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                return { hotel_id, name, data: json };
+            });
+        }
+
+        // Adicionar pousada manualmente por ID
+        const addHotelBtn = document.getElementById('add_hotel_btn');
+        if (addHotelBtn) {
+            addHotelBtn.addEventListener('click', () => {
+                const idInput = document.getElementById('new_hotel_id');
+                const nameInput = document.getElementById('new_hotel_name');
+                const id = idInput.value.trim();
+                const name = (nameInput.value.trim() || `Hotel ${id}`);
+
+                if (!id) { alert('Informe o ID da pousada.'); return; }
+
+                // Criar label + checkbox e anexar à lista
+                const list = document.querySelector('.hotel-list');
+                const label = document.createElement('label');
+                // marcar como adicionada pelo usuário
+                label.setAttribute('data-user-added', 'true');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'hotels';
+                checkbox.value = id;
+                checkbox.setAttribute('data-name', name);
+
+                const span = document.createElement('span');
+                span.className = 'hotel-name';
+                span.textContent = ' ' + name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-hotel-btn';
+                removeBtn.title = 'Remover esta pousada';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // remove o label inteiro
+                    label.remove();
+                    saveCurrentUserAddedHotels();
+                });
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                label.appendChild(removeBtn);
+                list.appendChild(label);
+
+                // limpar inputs e focar no id para adicionar outra
+                idInput.value = '';
+                nameInput.value = '';
+                idInput.focus();
+
+                // Salvar no localStorage
+                saveCurrentUserAddedHotels();
+            });
+        }
+
+        // Handler para remover todas as pousadas adicionadas pelo usuário
+        const clearAddedBtn = document.getElementById('clear_added_btn');
+        if (clearAddedBtn) {
+            clearAddedBtn.addEventListener('click', () => {
+                const list = document.querySelector('.hotel-list');
+                const added = list.querySelectorAll('label[data-user-added="true"]');
+                if (added.length === 0) { alert('Não há pousadas adicionadas para remover.'); return; }
+                added.forEach(el => el.remove());
+                saveCurrentUserAddedHotels();
+            });
+        }
+
+        function renderResults(results) {
+            // Renderiza uma tabela de comparação: linhas = datas, colunas = pousadas
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+
+            // Coletar todas as datas disponíveis
+            const dateSet = new Set();
+            results.forEach(r => {
+                const av = r.data && r.data.data && r.data.data.avDates ? r.data.data.avDates : [];
+                av.forEach(item => {
+                    const d = Object.keys(item)[0];
+                    dateSet.add(d);
+                });
+            });
+
+            const dates = Array.from(dateSet).sort();
+
+            // Construir tabela comparativa
+            const tableWrap = document.createElement('div');
+            tableWrap.className = 'comparison-wrap';
+
+            const table = document.createElement('table');
+            table.className = 'comparison-table';
+
+            const thead = document.createElement('thead');
+            const headRow = document.createElement('tr');
+            const thDate = document.createElement('th');
+            thDate.textContent = 'Data';
+            headRow.appendChild(thDate);
+
+            results.forEach(r => {
+                const th = document.createElement('th');
+                th.textContent = r.name || `Hotel ${r.hotel_id}`;
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            if (dates.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = results.length + 1;
+                td.textContent = 'Sem dados disponíveis';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            } else {
+                dates.forEach(date => {
+                    const tr = document.createElement('tr');
+                    const tdDate = document.createElement('td');
+                    tdDate.textContent = date;
+                    tr.appendChild(tdDate);
+
+                    results.forEach(r => {
+                        const av = r.data && r.data.data && r.data.data.avDates ? r.data.data.avDates : [];
+                        let price = null;
+                        for (const item of av) {
+                            const key = Object.keys(item)[0];
+                            if (key === date) { price = item[key]; break; }
+                        }
+                        const td = document.createElement('td');
+                        if (price != null && !Number.isNaN(Number(price))) {
+                            // Formatar para 2 casas decimais
+                            td.textContent = `R$ ${Number(price).toFixed(2)}`;
+                        } else {
+                            td.textContent = '-';
+                        }
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            table.appendChild(tbody);
+            tableWrap.appendChild(table);
+            container.appendChild(tableWrap);
+        }
+            </script>
 </body>
 </html>
