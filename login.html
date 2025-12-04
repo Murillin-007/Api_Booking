@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Comparador de Pousadas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-brand">Comparador de Pousadas</div>
+    <nav class="site-nav">
+    </nav>
+</header>
+
+<main class="page-main">
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Entrar</h2>
+            
+            <div class="error-message" id="error-msg"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" placeholder="seu usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="sua senha" required>
+                </div>
+                
+                <button type="submit" class="login-btn">Entrar</button>
+            </form>
+            
+            <div class="login-footer">
+                Não tem conta? <a href="#signup">Criar uma</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-content">2025 - Consultor de preços booking</div>
+
+<script>
+    // Verificar se usuário já está logado
+    function checkLogin() {
+        const adminAuth = localStorage.getItem('adminAuth');
+        if (adminAuth) {
+            window.location.href = 'admin.html';
+            return;
+        }
+        
+        const user = localStorage.getItem('currentUser');
+        if (user) {
+            window.location.href = 'index.html';
+        }
+    }
+
+    // Executar ao carregar a página
+    checkLogin();
+
+    // Inicializar usuários padrão se não existirem
+    function initializeDefaultUsers() {
+        const users = JSON.parse(localStorage.getItem('appUsers') || '[]');
+        if (users.length === 0) {
+            const defaultUsers = [
+                { username: 'usuario1', password: 'senha123' },
+                { username: 'usuario2', password: 'senha456' }
+            ];
+            localStorage.setItem('appUsers', JSON.stringify(defaultUsers));
+        }
+    }
+
+    initializeDefaultUsers();
+
+    // Handler de login
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorMsg = document.getElementById('error-msg');
+
+        // Validação básica
+        if (!username || !password) {
+            errorMsg.textContent = 'Por favor, preencha todos os campos.';
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        if (password.length < 4) {
+            errorMsg.textContent = 'A senha deve ter pelo menos 4 caracteres.';
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        // Verificar se é login de Admin (credenciais específicas)
+        if (username === 'Moril' && password === 'MuriloMurilo_123') {
+            errorMsg.classList.remove('show');
+            localStorage.setItem('adminAuth', JSON.stringify({ username: 'Moril', loginTime: Date.now() }));
+            setTimeout(() => {
+                window.location.href = 'admin.html';
+            }, 300);
+            return;
+        }
+
+        // Login de Usuário Regular
+        const users = JSON.parse(localStorage.getItem('appUsers') || '[]');
+        const user = users.find(u => u.username === username && u.password === password);
+
+        if (user) {
+            errorMsg.classList.remove('show');
+            localStorage.setItem('currentUser', JSON.stringify({ username, loginTime: Date.now() }));
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        } else {
+            errorMsg.textContent = 'Usuário ou senha inválidos.';
+            errorMsg.classList.add('show');
+        }
+    });
+</script>
+</body>
+</html>

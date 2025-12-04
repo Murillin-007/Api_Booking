@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin — Comparador de Pousadas</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .admin-sidebar {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            padding: 10px 12px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.04);
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .sidebar-menu button:hover, .sidebar-menu button.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .admin-content {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .admin-section h3 {
+            color: var(--text);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            color: var(--text);
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-save {
+            padding: 10px 18px;
+            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.08s ease, box-shadow 0.12s ease;
+            box-shadow: 0 6px 18px rgba(14, 78, 194, 0.18);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(14, 78, 194, 0.22);
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .users-table th, .users-table td {
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .users-table thead th {
+            background: rgba(255,255,255,0.02);
+            font-weight: 600;
+        }
+
+        .users-table tbody tr:nth-child(even) {
+            background: rgba(255,255,255,0.01);
+        }
+
+        .btn-delete {
+            padding: 6px 10px;
+            background: rgba(255, 123, 123, 0.1);
+            border: 1px solid rgba(255, 123, 123, 0.2);
+            color: #ff9999;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 123, 123, 0.2);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .message.error {
+            background: rgba(255, 123, 123, 0.1);
+            border: 1px solid rgba(255, 123, 123, 0.2);
+            color: #ff9999;
+        }
+
+        @media (max-width: 800px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sidebar {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .sidebar-menu li {
+                margin-bottom: 0;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-brand">Comparador de Pousadas</div>
+    <nav class="site-nav">
+        <a href="index.html">Voltar</a>
+        <a href="#" id="logout-btn-admin" style="color:#ff7b7b;">Logout</a>
+    </nav>
+</header>
+
+<main class="page-main">
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li><button class="menu-btn active" data-section="users">Usuários</button></li>
+                <li><button class="menu-btn" data-section="settings">Configurações</button></li>
+            </ul>
+        </aside>
+
+        <div class="admin-content">
+            <!-- Seção: Usuários -->
+            <section class="admin-section active" id="users-section">
+                <h3>Gerenciar Usuários</h3>
+                
+                <div id="message-container"></div>
+
+                <div>
+                    <h4 style="color: var(--text);">Cadastrar Novo Usuário</h4>
+                    <form id="user-form">
+                        <div class="form-group">
+                            <label for="new-username">Usuário</label>
+                            <input type="text" id="new-username" placeholder="nome de usuário" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Senha</label>
+                            <input type="password" id="new-password" placeholder="senha (min. 4 caracteres)" required>
+                        </div>
+                        <button type="submit" class="btn-save">Cadastrar Usuário</button>
+                    </form>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <h4 style="color: var(--text);">Usuários Cadastrados</h4>
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Data Criação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: var(--muted);">Nenhum usuário cadastrado</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Seção: Configurações -->
+            <section class="admin-section" id="settings-section">
+                <h3>Configurações</h3>
+                <p style="color: var(--muted);">Configurações do sistema virão aqui...</p>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-content">2025 - Consultor de preços booking</div>
+</footer>
+
+<script>
+    // ===== VERIFICAÇÃO DE ADMIN =====
+    function checkAdminAuth() {
+        const adminAuth = localStorage.getItem('adminAuth');
+        if (!adminAuth) {
+            window.location.href = 'login.html?admin=true';
+        }
+    }
+
+    checkAdminAuth();
+
+    // ===== SISTEMA DE USUÁRIOS =====
+    function initializeUsers() {
+        const users = JSON.parse(localStorage.getItem('appUsers') || '[]');
+        if (users.length === 0) {
+            // Usuários padrão (demo)
+            const defaultUsers = [
+                { username: 'usuario1', password: 'senha123', createdAt: new Date().toLocaleString('pt-BR') },
+                { username: 'usuario2', password: 'senha456', createdAt: new Date().toLocaleString('pt-BR') }
+            ];
+            localStorage.setItem('appUsers', JSON.stringify(defaultUsers));
+        }
+    }
+
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('appUsers') || '[]');
+    }
+
+    function saveUsers(users) {
+        localStorage.setItem('appUsers', JSON.stringify(users));
+    }
+
+    function renderUsers() {
+        const users = getUsers();
+        const tbody = document.getElementById('users-tbody');
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--muted);">Nenhum usuário cadastrado</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map((user, idx) => `
+            <tr>
+                <td>${user.username}</td>
+                <td>${user.createdAt}</td>
+                <td><button class="btn-delete" onclick="deleteUser(${idx})">Remover</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteUser(idx) {
+        if (confirm('Deseja remover este usuário?')) {
+            const users = getUsers();
+            users.splice(idx, 1);
+            saveUsers(users);
+            renderUsers();
+            showMessage('Usuário removido com sucesso!', 'success');
+        }
+    }
+
+    function showMessage(text, type = 'success') {
+        const container = document.getElementById('message-container');
+        container.innerHTML = `<div class="message ${type}">${text}</div>`;
+        setTimeout(() => { container.innerHTML = ''; }, 3000);
+    }
+
+    // ===== HANDLERS =====
+    document.getElementById('user-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('new-username').value.trim();
+        const password = document.getElementById('new-password').value.trim();
+
+        if (password.length < 4) {
+            showMessage('A senha deve ter pelo menos 4 caracteres.', 'error');
+            return;
+        }
+
+        const users = getUsers();
+        if (users.some(u => u.username === username)) {
+            showMessage('Este usuário já existe.', 'error');
+            return;
+        }
+
+        users.push({
+            username,
+            password,
+            createdAt: new Date().toLocaleString('pt-BR')
+        });
+        saveUsers(users);
+        renderUsers();
+        showMessage('Usuário cadastrado com sucesso!', 'success');
+        document.getElementById('user-form').reset();
+    });
+
+    // Menu lateral
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            
+            btn.classList.add('active');
+            const sectionId = btn.getAttribute('data-section') + '-section';
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
+
+    // Logout
+    document.getElementById('logout-btn-admin').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminAuth');
+        window.location.href = 'login.html';
+    });
+
+    // Inicializar
+    initializeUsers();
+    renderUsers();
+</script>
+</body>
+</html>

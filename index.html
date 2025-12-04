@@ -3,16 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Consultor</title>
      <link rel="stylesheet" href="style.css">
 </head>
-<body style="background-color: #18212e;">
-<div class="consultor-box">
+<body>
+<header class="site-header">
+    <div class="site-brand">Comparador de Pousadas</div>
+    <nav class="site-nav">
+        <a href="index.html">Início</a>
+        <a href="#about">Sobre</a>
+        <a href="admin.html" id="admin-link" style="display:none;">Admin</a>
+        <a href="#" id="logout-btn" style="display:none;color:#ff7b7b;">Logout</a>
+        <a href="login.html" id="login-link">Login</a>
+    </nav>
+</header>
+
+<main class="page-main">
+  <div class="consultor-box">
     <div>
         <h1>Escolha pousadas:</h1>
-       
-        <div class="hotel-list">
 
+        <div class="hotel-list">
             <label><input type="checkbox" name="hotels" value="11496463" data-name="VELINN guest house"> VELINN guest house</label>
             <label><input type="checkbox" name="hotels" value="2993686" data-name="Pousada VHL - Campos do Jordão"> Pousada VHL - Campos do Jordão</label>
             <label><input type="checkbox" name="hotels" value="1669425" data-name="VELINN Pousada Vila Floratta"> VELINN Pousada Vila Floratta</label>
@@ -36,16 +47,128 @@
                 <input id="new_hotel_id" type="text" placeholder="ID da pousada (ex: 123456)" />
                 <input id="new_hotel_name" type="text" placeholder="Nome (opcional)" />
                 <button id="add_hotel_btn" type="button">Adicionar pousada</button>
+
             </div>
         </div>
+        </div>
+        <div id="response"></div>
+        <div id="results" class="results"></div>
     </div>
-    <div id="response"></div>
-    <div id="results" class="results"></div>
-    
-</div>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-content">2025 - Consultor de preços booking</div>
+</footer>
 
     
     <script>
+        // ===== AUTENTICAÇÃO =====
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            const loginLink = document.getElementById('login-link');
+            const logoutBtn = document.getElementById('logout-btn');
+            const adminLink = document.getElementById('admin-link');
+            
+            if (user) {
+                loginLink.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                adminLink.style.display = 'none'; // usuários normais não acessam admin
+            } else {
+                loginLink.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                adminLink.style.display = 'none';
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        });
+
+        checkAuth();
+
+        // ===== GERENCIAR POUSADAS POR USUÁRIO =====
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).username : null;
+        }
+
+        function getUserHotelsKey(username) {
+            return `userHotels_${username}`;
+        }
+
+        function getUserAddedHotels(username) {
+            const key = getUserHotelsKey(username);
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function saveUserAddedHotels(username, hotels) {
+            const key = getUserHotelsKey(username);
+            localStorage.setItem(key, JSON.stringify(hotels));
+        }
+
+        function loadUserAddedHotels() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            const addedHotels = getUserAddedHotels(user);
+            const list = document.querySelector('.hotel-list');
+            
+            addedHotels.forEach(hotel => {
+                const label = document.createElement('label');
+                label.setAttribute('data-user-added', 'true');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'hotels';
+                checkbox.value = hotel.id;
+                checkbox.setAttribute('data-name', hotel.name);
+
+                const span = document.createElement('span');
+                span.className = 'hotel-name';
+                span.textContent = ' ' + hotel.name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-hotel-btn';
+                removeBtn.title = 'Remover esta pousada';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    label.remove();
+                    saveCurrentUserAddedHotels();
+                });
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                label.appendChild(removeBtn);
+                list.appendChild(label);
+            });
+        }
+
+        function saveCurrentUserAddedHotels() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            const addedLabels = document.querySelectorAll('label[data-user-added="true"]');
+            const hotels = Array.from(addedLabels).map(label => {
+                const input = label.querySelector('input');
+                return {
+                    id: input.value,
+                    name: input.getAttribute('data-name')
+                };
+            });
+            
+            saveUserAddedHotels(user, hotels);
+        }
+
+        // Carregar pousadas do usuário ao iniciar
+        if (getCurrentUser()) {
+            loadUserAddedHotels();
+        }
+
+        // ===== FUNCIONALIDADES EXISTENTES =====
         const button = document.getElementById("btn");
 
         button.addEventListener("click", async () => {
@@ -113,19 +236,55 @@
                 // Criar label + checkbox e anexar à lista
                 const list = document.querySelector('.hotel-list');
                 const label = document.createElement('label');
+                // marcar como adicionada pelo usuário
+                label.setAttribute('data-user-added', 'true');
+
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.name = 'hotels';
                 checkbox.value = id;
                 checkbox.setAttribute('data-name', name);
+
+                const span = document.createElement('span');
+                span.className = 'hotel-name';
+                span.textContent = ' ' + name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-hotel-btn';
+                removeBtn.title = 'Remover esta pousada';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // remove o label inteiro
+                    label.remove();
+                    saveCurrentUserAddedHotels();
+                });
+
                 label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(' ' + name));
+                label.appendChild(span);
+                label.appendChild(removeBtn);
                 list.appendChild(label);
 
                 // limpar inputs e focar no id para adicionar outra
                 idInput.value = '';
                 nameInput.value = '';
                 idInput.focus();
+
+                // Salvar no localStorage
+                saveCurrentUserAddedHotels();
+            });
+        }
+
+        // Handler para remover todas as pousadas adicionadas pelo usuário
+        const clearAddedBtn = document.getElementById('clear_added_btn');
+        if (clearAddedBtn) {
+            clearAddedBtn.addEventListener('click', () => {
+                const list = document.querySelector('.hotel-list');
+                const added = list.querySelectorAll('label[data-user-added="true"]');
+                if (added.length === 0) { alert('Não há pousadas adicionadas para remover.'); return; }
+                added.forEach(el => el.remove());
+                saveCurrentUserAddedHotels();
             });
         }
 
@@ -190,7 +349,12 @@
                             if (key === date) { price = item[key]; break; }
                         }
                         const td = document.createElement('td');
-                        td.textContent = price != null ? `R$ ${price}` : '-';
+                        if (price != null && !Number.isNaN(Number(price))) {
+                            // Formatar para 2 casas decimais
+                            td.textContent = `R$ ${Number(price).toFixed(2)}`;
+                        } else {
+                            td.textContent = '-';
+                        }
                         tr.appendChild(td);
                     });
 
