@@ -5,21 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consultor</title>
      <link rel="stylesheet" href="style.css">
-    <script>
-        (function() {
-            try {
-                const user = localStorage.getItem('currentUser');
-                const admin = localStorage.getItem('adminAuth');
-                if (!user && !admin) {
-                    // Usuário não autenticado — encaminhar para a tela de login
-                    window.location.replace('login.html');
-                }
-            } catch (e) {
-                // Em caso de erro ao acessar localStorage, ir para login por segurança
-                try { window.location.replace('login.html'); } catch (err) { /* ignore */ }
-            }
-        })();
-    </script>
 </head>
 <body>
 <header class="site-header">
