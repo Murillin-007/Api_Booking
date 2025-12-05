@@ -101,7 +101,9 @@
         if (username === 'Moril' && password === 'MuriloMurilo_123') {
             errorMsg.classList.remove('show');
             localStorage.setItem('adminAuth', JSON.stringify({ username: 'Moril', loginTime: Date.now() }));
-            window.location.replace('admin.html');
+            setTimeout(() => {
+                window.location.href = 'admin.html';
+            }, 300);
             return;
         }
 
@@ -112,7 +114,9 @@
         if (user) {
             errorMsg.classList.remove('show');
             localStorage.setItem('currentUser', JSON.stringify({ username, loginTime: Date.now() }));
-            window.location.replace('index.html');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
         } else {
             errorMsg.textContent = 'Usuário ou senha inválidos.';
             errorMsg.classList.add('show');

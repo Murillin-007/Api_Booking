@@ -62,10 +62,6 @@
 
     
     <script>
-        import { createClient } from '@supabase/supabase-js'
-        const supabaseUrl = 'https://mmsoamuxngpsykrdwgcb.supabase.co'
-        const supabaseKey = process.env.SUPABASE_KEY
-        const supabase = createClient(supabaseUrl, supabaseKey)
         // ===== AUTENTICAÇÃO =====
         function checkAuth() {
             const user = localStorage.getItem('currentUser');
